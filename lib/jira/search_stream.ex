@@ -1,4 +1,4 @@
-defmodule Jira.SearchStream do
+defmodule SearchStream do
   def new(jql) do
     Stream.resource(
       fn -> fetch_query(jql) end,
@@ -11,11 +11,11 @@ defmodule Jira.SearchStream do
 
   defp fetch_query(query = %{"jql" => jql}) when is_map(query) do
     response = Jira.API.search(query)
-    page_size = response.body["maxResults"]
-    current_start_at = response.body["startAt"]
+    page_size = response["maxResults"]
+    current_start_at = response["startAt"]
     next_start_at = page_size + current_start_at
-    total = response.body["total"]
-    issues = response.body["issues"]
+    total = response["total"]
+    issues = response["issues"]
 
     next_query =
       if next_start_at >= total,
