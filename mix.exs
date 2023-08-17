@@ -8,8 +8,8 @@ defmodule Jira.Mixfile do
   def project do
     [
       app: :jira,
-      version: "0.2.0",
-      elixir: "~> 1.8",
+      version: "0.3.0",
+      elixir: "~> 1.15",
       name: "jira",
       description: @description,
       package: package(),
@@ -23,7 +23,7 @@ defmodule Jira.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:logger, :mojito], mod: {Jira, []}]
+    [extra_applications: [:logger], mod: {Jira, []}]
   end
 
   # Dependencies can be Hex packages:
@@ -38,7 +38,7 @@ defmodule Jira.Mixfile do
   defp deps do
     [
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
-      {:mojito, "~> 0.6"},
+      {:req, "~> 0.3.0"},
       {:jason, "~> 1.0"}
     ]
   end

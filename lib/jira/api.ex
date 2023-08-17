@@ -15,32 +15,10 @@ defmodule Jira.API do
     config_or_env(:password, "JIRA_PASSWORD")
   end
 
-  ### HTTPoison.Base callbacks
-  def process_url(path) do
-    host() <> path
-  end
-
-  def process_response_body(body) do
-    body
-    |> decode_body
-  end
-
-  def process_request_headers(headers) do
-    [{"authorization", authorization_header()} | headers]
-  end
-
-  defp decode_body(""), do: ""
-  defp decode_body(body), do: Jason.decode!(body)
-
-  ### Internal Helpers
-  def authorization_header do
-    credentials = encoded_credentials(username(), password())
-    "Basic #{credentials}"
-  end
-
-  defp encoded_credentials(user, pass) do
-    "#{user}:#{pass}"
-    |> Base.encode64()
+  ### Req callbacks
+  @spec req():: Req.Request.t()
+  def req() do
+    Req.new(base_url: host(), auth: {username(), password()})
   end
 
   ### API
@@ -95,32 +73,26 @@ defmodule Jira.API do
   end
 
   def get!(path) do
-    {:ok, response} = Mojito.get(process_url(path), process_request_headers([]))
-
-    process_response_body(response.body)
+    {:ok, response} = Req.get(req(), url: path)
+    response.body
   end
 
   def post_as_json!(path, content) do
-    json_content = Jason.encode!(content)
-    post!(path, json_content, [{"Content-type", "application/json"}])
+    {:ok, response} = Req.post(req(), url: path, json: content)
+    response.body
   end
 
-  def post!(path, content, extra_headers) do
-    {:ok, response} =
-      Mojito.post(process_url(path), process_request_headers(extra_headers), content)
-
-    process_response_body(response.body)
+  def post!(path, content) do
+    {:ok, response} = Req.post(req(), url: path, form: content)
+    response.body
   end
 
   def put_as_json!(path, content) do
-    json_content = Jason.encode!(content)
-    put!(path, json_content, [{"Content-type", "application/json"}])
+    Req.put(req(), url: path, json: content)
   end
 
-  def put!(path, content, extra_headers) do
-    {:ok, response} =
-      Mojito.put(process_url(path), process_request_headers(extra_headers), content)
-
-    process_response_body(response.body)
+  def put!(path, content) do
+    {:ok, response} = Req.put(req(), url: path, form: content)
+    response.body
   end
 end
